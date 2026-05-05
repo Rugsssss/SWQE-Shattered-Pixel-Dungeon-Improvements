@@ -111,17 +111,30 @@ public class DesktopLauncher {
 				System.exit(1);
 			}
 		});
-		
+
+		// --- FIXED VERSION LOGIC ---
 		Game.version = DesktopLauncher.class.getPackage().getSpecificationVersion();
 		if (Game.version == null) {
 			Game.version = System.getProperty("Specification-Version");
 		}
-		
-		try {
-			Game.versionCode = Integer.parseInt(DesktopLauncher.class.getPackage().getImplementationVersion());
-		} catch (NumberFormatException e) {
-			Game.versionCode = Integer.parseInt(System.getProperty("Implementation-Version"));
+		// Fallback to prevent NullPointerException in DeviceCompat/noosa.Game
+		if (Game.version == null) {
+			Game.version = "1.5.0-IDE";
 		}
+
+		try {
+			String implVersion = DesktopLauncher.class.getPackage().getImplementationVersion();
+			if (implVersion == null) implVersion = System.getProperty("Implementation-Version");
+
+			if (implVersion != null) {
+				Game.versionCode = Integer.parseInt(implVersion);
+			} else {
+				Game.versionCode = 833; // Default fallback
+			}
+		} catch (NumberFormatException e) {
+			Game.versionCode = 833;
+		}
+		// --- END FIXED VERSION LOGIC ---
 
 		if (UpdateImpl.supportsUpdates()){
 			Updates.service = UpdateImpl.getUpdateService();
@@ -129,17 +142,25 @@ public class DesktopLauncher {
 		if (NewsImpl.supportsNews()){
 			News.service = NewsImpl.getNewsService();
 		}
-		
+
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
-		
 		config.setTitle( title );
 
-		//if I were implementing this from scratch I would use the full implementation title for saves
-		// (e.g. /.shatteredpixel/shatteredpixeldungeon), but we have too much existing save
-		// date to worry about transferring at this point.
+		// --- FIXED VENDOR LOGIC ---
 		String vendor = DesktopLauncher.class.getPackage().getImplementationTitle();
 		if (vendor == null) {
 			vendor = System.getProperty("Implementation-Title");
+		}
+		// Fallback to prevent NullPointerException on .split()
+		if (vendor == null || !vendor.contains(".")) {
+			vendor = "shatteredpixel.shatteredpixeldungeon";
+		}
+		vendor = vendor.split("\\.")[1];
+		// --- END FIXED VENDOR LOGIC ---
+
+		// Fallback for IDE execution
+		if (vendor == null || !vendor.contains(".")) {
+			vendor = "shatteredpixel.shatteredpixeldungeon";
 		}
 		vendor = vendor.split("\\.")[1];
 

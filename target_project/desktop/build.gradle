@@ -124,3 +124,11 @@ dependencies {
     implementation project(':services:updates:githubUpdates')
     implementation project(':services:news:shatteredNews')
 }
+
+
+apply plugin: "application"
+mainClassName = "com.shatteredpixel.shatteredpixeldungeon.desktop.DesktopLauncher"
+
+application {
+    mainClass = "com.shatteredpixel.shatteredpixeldungeon.desktop.DesktopLauncher"
+}
