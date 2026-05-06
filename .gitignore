@@ -1,1 +1,13 @@
 .DS_Store
+# Ignore everything inside target_project's build and gradle folders
+target_project/.gradle/
+target_project/build/
+target_project/*/build/
+target_project/*.iml
+target_project/.idea/
+target_project/local.properties
+target_project/bin/
+
+# Screenshots
+screenshot_*.png
+target_project/screenshot_*.png
