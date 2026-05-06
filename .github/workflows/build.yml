@@ -20,3 +20,4 @@ jobs:
       uses: gradle/actions/setup-gradle@v3
     - name: Build with Gradle
       run: ./gradlew build
+      working-directory: target_project  # <--- Add this line
