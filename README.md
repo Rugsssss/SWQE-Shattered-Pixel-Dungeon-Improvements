@@ -44,3 +44,6 @@ Each improvement will be evaluated on **Implementation Quality** (clean code, co
 
 ---
 *Deadline: Sunday, 24 May 2026, 23:59*[cite: 1]
+
+Notes/Logs from devs
+May 6, 2026 - 6:32 pm -- CI/CD enabled
