@@ -1,19 +1,13 @@
-# Gradle
-.gradle/
-build/
-*/build/
-
-# IntelliJ / VS Code
-.idea/
-.vscode/
-*.iml
-
-# Local machine files
-local.properties
 .DS_Store
+# Ignore everything inside target_project's build and gradle folders
+target_project/.gradle/
+target_project/build/
+target_project/*/build/
+target_project/*.iml
+target_project/.idea/
+target_project/local.properties
+target_project/bin/
 
-.idea/
-local.properties
-bin/
-# Your new screenshots!
+# Screenshots
 screenshot_*.png
+target_project/screenshot_*.png
