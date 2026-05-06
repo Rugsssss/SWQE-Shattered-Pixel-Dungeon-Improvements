@@ -11,3 +11,22 @@ target_project/bin/
 # Screenshots
 screenshot_*.png
 target_project/screenshot_*.png
+# Gradle
+.gradle/
+build/
+*/build/
+
+# IntelliJ / VS Code
+.idea/
+.vscode/
+*.iml
+
+# Local machine files
+local.properties
+.DS_Store
+
+.idea/
+local.properties
+bin/
+# Your new screenshots!
+screenshot_*.png
