@@ -32,6 +32,7 @@ target_project/*.iml
 target_project/.idea/
 target_project/local.properties
 target_project/bin/
+target_project/services/updates/githubUpdates/build/tmp
 
 # Screenshots
 screenshot_*.png

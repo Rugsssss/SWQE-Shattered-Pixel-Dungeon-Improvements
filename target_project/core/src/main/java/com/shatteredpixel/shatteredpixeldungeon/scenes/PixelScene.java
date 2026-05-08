@@ -296,6 +296,7 @@ public class PixelScene extends Scene {
 					add(Reflection.newInstanceUnhandled(w));
 				} catch (Exception e){
 					//just eat the exception
+					com.watabou.utils.DeviceCompat.log("PixelScene", "Failed to restore window: " + e.getMessage());
 				}
 			}
 		}
