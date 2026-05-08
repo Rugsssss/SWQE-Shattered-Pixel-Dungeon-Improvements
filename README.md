@@ -97,7 +97,7 @@ The utility "hooks" into the engine's `InputHandler.java`. By overriding the `ke
 ## 👥 Group Members
 - [Member Name]
 - [Member Name]
-- [Member Name]
+- **Amogh Ranganatha Gowda** (MPE software accelerated) 
 - [Member Name]
 - **Martina Therese Reyes** (Software Engineering Accelerated)
 
