@@ -63,8 +63,10 @@ public class SpinnerSprite extends MobSprite {
 		super.link(ch);
 		if (parent != null) {
 			parent.sendToBack(this);
+			synchronized (this) { 	//synchronized to prevent race condition
 			if (aura != null){
 				parent.sendToBack(aura);
+			}
 			}
 		}
 		renderShadow = false;

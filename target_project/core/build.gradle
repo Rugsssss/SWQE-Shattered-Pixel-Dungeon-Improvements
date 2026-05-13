@@ -7,3 +7,27 @@ dependencies {
     api project(':SPD-classes')
     implementation project(':services')
 }
+
+apply plugin: 'com.github.spotbugs'
+
+import com.github.spotbugs.snom.Effort
+import com.github.spotbugs.snom.Confidence
+
+spotbugs {
+    toolVersion = "4.8.3"
+    ignoreFailures = true
+    effort = Effort.valueOf('MAX')
+    reportLevel = Confidence.valueOf('LOW')
+}
+
+spotbugsMain {
+    reports {
+        html {
+            required = true
+            outputLocation = file("$buildDir/reports/spotbugs/main.html")
+        }
+        xml {
+            required = false
+        }
+    }
+}

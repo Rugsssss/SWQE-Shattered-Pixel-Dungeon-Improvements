@@ -64,6 +64,7 @@ import com.watabou.utils.Reflection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Objects;
 
 public class Notes {
 	
@@ -339,6 +340,11 @@ public class Notes {
 			return (obj instanceof KeyRecord)
 					&& key.isSimilar(((KeyRecord) obj).key);
 		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(key.depth);
+		}
 		
 		private static final String KEY	= "key";
 		
@@ -468,6 +474,11 @@ public class Notes {
 		@Override
 		public boolean equals(Object obj) {
 			return obj instanceof CustomRecord && ((CustomRecord) obj).ID == ID;
+		}
+
+		@Override
+		public int hashCode() {
+    		return Integer.hashCode(ID);
 		}
 
 		private static final String TYPE        = "type";

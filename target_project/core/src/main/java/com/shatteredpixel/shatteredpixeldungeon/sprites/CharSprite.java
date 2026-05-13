@@ -608,13 +608,16 @@ public class CharSprite extends MovieClip implements Tweener.Listener, MovieClip
 			hearts.visible = visible;
 		}
 		//shield fx updates its own visibility
+		synchronized(this){
 		if (aura != null) {
 			if (aura.parent == null) {
 				aura.show(this, 0);
 			}
 			aura.visible = visible;
 			aura.point(center());
+			}
 		}
+
 		if (glowBlock != null){
 			glowBlock.visible =visible;
 		}

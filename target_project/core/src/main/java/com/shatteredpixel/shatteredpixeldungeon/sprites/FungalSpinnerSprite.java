@@ -63,8 +63,10 @@ public class FungalSpinnerSprite extends MobSprite {
 		super.link(ch);
 		if (parent != null) {
 			parent.sendToBack(this);
-			if (aura != null){
-				parent.sendToBack(aura);
+			synchronized (this) {	// synchronized it
+    			if (aura != null){
+       		 	parent.sendToBack(aura);
+    			}
 			}
 		}
 		renderShadow = false;
