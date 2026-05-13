@@ -21,13 +21,14 @@
 
 package com.watabou.input;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.watabou.noosa.Game;
 import com.watabou.utils.PointF;
-
+import com.watabou.utils.Screenshot;
 public class InputHandler extends InputAdapter {
 
 	private InputMultiplexer multiplexer;
@@ -176,6 +177,16 @@ public class InputHandler extends InputAdapter {
 	
 	@Override
 	public synchronized boolean keyUp( int keyCode ) {
+		// 1. Check if keyCode is equal to the F12 constant here...
+		// 2. If it is, we will eventually call Screenshot.capture();
+		// 3. Return true so the game knows the event is "consumed."
+		if (keyCode == Input.Keys.F12) {
+			// This will show up in your Android Studio Logcat or Terminal
+			Gdx.app.log("Screenshot", "F12 key detected!");
+			Screenshot.capture();
+			return true;
+		}
+
 		if (KeyBindings.isKeyBound( keyCode )) {
 			KeyEvent.addKeyEvent( new KeyEvent( keyCode, false ) );
 			return true;
