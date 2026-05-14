@@ -49,9 +49,12 @@ public class GamesInProgress {
 	private static final String DEPTH_BRANCH_FILE	= "depth%d-branch%d.dat";
 	
 	public static boolean gameExists( int slot ){
-		return FileUtils.dirExists(gameFolder(slot))
-				&& FileUtils.fileLength(gameFile(slot)) > 1;
-	}
+	return FileUtils.dirExists(gameFolder(slot))
+			&& (
+					FileUtils.fileLength(gameFile(slot)) > 1
+					|| FileUtils.fileLength(gameFile(slot) + ".bak") > 1
+			);
+}
 	
 	public static String gameFolder( int slot ){
 		return Messages.format(GAME_FOLDER, slot);
@@ -110,7 +113,7 @@ public class GamesInProgress {
 			Info info;
 			try {
 				
-				Bundle bundle = FileUtils.bundleFromFile(gameFile(slot));
+				Bundle bundle = FileUtils.bundleFromFileWithBackup(gameFile(slot));
 
 				if (bundle.getInt( "version" ) < ShatteredPixelDungeon.v2_3_2) {
 					info = null;
