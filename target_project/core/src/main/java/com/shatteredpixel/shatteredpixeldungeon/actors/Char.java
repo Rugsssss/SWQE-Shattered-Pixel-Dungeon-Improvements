@@ -155,6 +155,8 @@ import com.watabou.utils.PathFinder;
 import com.watabou.utils.Random;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -780,7 +782,12 @@ public abstract class Char extends Actor {
 		return cachedShield;
 	}
 	
-	public void damage( int dmg, Object src ) {
+	/*
+	 Main damage method with flexible property system.
+	 Replaces the old hardcoded "!(src instanceof Hunger)" check with
+		an extensible DamageProperty system as requested by the FIXME.
+	 */
+	public void damage( int dmg, Object src, Set<DamageProperty> properties ) {
 		
 		if (!isAlive() || dmg < 0) {
 			return;
@@ -901,7 +908,8 @@ public abstract class Char extends Actor {
 		}
 
 		int shielded = dmg;
-		//FIXME: when I add proper damage properties, should add an IGNORES_SHIELDS property to use here.
+		// Replaced with DamageProperty system
+		if (properties.contains(DamageProperty.IGNORES_SHIELDS) == false)
 		if (!(src instanceof Hunger)){
 			for (ShieldBuff s : buffs(ShieldBuff.class)){
 				dmg = s.absorbDamage(dmg);
@@ -992,7 +1000,13 @@ public abstract class Char extends Actor {
 		} else if (HP == 0 && buff(DeathMark.DeathMarkTracker.class) != null){
 			DeathMark.processFearTheReaper(this);
 		}
+
+}
+	public void damage( int dmg, Object src ) {
+		// Default: no special properties
+		damage( dmg, src, EnumSet.noneOf(DamageProperty.class) );
 	}
+
 
 	//these are misc. sources of physical damage which do not apply armor, they get a different icon
 	private static HashSet<Class> NO_ARMOR_PHYSICAL_SOURCES = new HashSet<>();
