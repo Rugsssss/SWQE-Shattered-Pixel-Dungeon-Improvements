@@ -36,6 +36,8 @@ import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.watabou.utils.PathFinder;
 import com.watabou.utils.Random;
+import java.util.EnumSet;
+import com.shatteredpixel.shatteredpixeldungeon.actors.DamageProperty;
 
 public class Electricity extends Blob {
 	
@@ -74,7 +76,8 @@ public class Electricity extends Blob {
 							Buff.prolong( ch, Paralysis.class, cur[cell]);
 						}
 						if (cur[cell] % 2 == 1) {
-							ch.damage(Math.round(Random.Float(2 + Dungeon.scalingDepth() / 5f)), this);
+							// ensures that electricity dmg by pases shield as intended originially
+							ch.damage(Math.round(Random.Float(2 + Dungeon.scalingDepth() / 5f)), this, EnumSet.of(DamageProperty.IGNORES_SHIELDS));
 							if (!ch.isAlive() && ch == Dungeon.hero){
 								Dungeon.fail( this );
 								GLog.n( Messages.get(this, "ondeath") );
