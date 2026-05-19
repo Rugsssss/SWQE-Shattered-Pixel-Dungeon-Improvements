@@ -163,11 +163,11 @@ import java.util.LinkedHashSet;
 
 public abstract class Char extends Actor {
 	
-	/**
-	 * GAME BALANCE CONSTANTS
-	 * All magic numbers extracted here for Maintainability (ISO 25010).
-	 * Changing a number in one place updates all affected calculations.
-	 */
+	/*
+	 GAME BALANCE CONSTANTS
+	 All magic numbers extracted here for Maintainability (ISO 25010).
+	 Changing a number in one place updates all affected calculations.
+	*/
 	
 	// Aura of Protection talent scaling
 	private static final float AURA_OF_PROTECTION_BASE_REDUCTION = 0.925f;
@@ -982,9 +982,8 @@ public abstract class Char extends Actor {
 		}
 
 		int shielded = dmg;
-		// Replaced with DamageProperty system
-		if (properties.contains(DamageProperty.IGNORES_SHIELDS) == false)
-		if (!(src instanceof Hunger)){
+		// Rely solely on the DamageProperty system for shield bypass logic
+		if (!DamageCalculator.bypassesShields(properties)) {
 			for (ShieldBuff s : buffs(ShieldBuff.class)){
 				dmg = s.absorbDamage(dmg);
 				if (dmg == 0) break;
