@@ -715,7 +715,7 @@ public class Dungeon {
 	
 	public static void loadGame( int save, boolean fullLoad ) throws IOException {
 		
-		Bundle bundle = FileUtils.bundleFromFile( GamesInProgress.gameFile( save ) );
+		Bundle bundle = FileUtils.bundleFromFileWithBackup( GamesInProgress.gameFile( save ) );
 
 		initialVersion = bundle.getInt( INIT_VER );
 		version = bundle.getInt( VERSION );
@@ -821,7 +821,7 @@ public class Dungeon {
 		Dungeon.level = null;
 		Actor.clear();
 
-		Bundle bundle = FileUtils.bundleFromFile( GamesInProgress.depthFile( save, depth, branch ));
+		Bundle bundle = FileUtils.bundleFromFileWithBackup( GamesInProgress.depthFile( save, depth, branch ));
 
 		Level level = (Level)bundle.get( LEVEL );
 

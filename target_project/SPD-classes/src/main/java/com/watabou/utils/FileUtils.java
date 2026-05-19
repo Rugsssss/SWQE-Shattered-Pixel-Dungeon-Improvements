@@ -187,7 +187,54 @@ public class FileUtils {
 			throw new IOException(e);
 		}
 	}
-	
+		/**
+	 * Attempts to load a bundle from the primary file.
+	 * If the primary file is missing, empty, or corrupted, this method
+	 * attempts to recover using a last-known-good backup file.
+	 *
+	 * @param fileName the primary bundle file name
+	 * @return the loaded Bundle from the primary file or restored backup
+	 * @throws IOException if both the primary file and backup cannot be loaded
+	 */
+		public static Bundle bundleFromFileWithBackup( String fileName ) throws IOException {
+		try {
+			return bundleFromFile( fileName );
+
+		} catch (Exception primaryFailure) {
+
+			System.out.println("[SAVE RECOVERY] Primary file unreadable: " + fileName);
+			System.out.println("[SAVE RECOVERY] Attempting backup recovery from: " + fileName + ".bak");
+
+			String backupFileName = fileName + ".bak";
+
+			try {
+				Bundle backupBundle = bundleFromFile( backupFileName );
+
+				FileHandle primaryFile = getFileHandle( fileName );
+				FileHandle backupFile = getFileHandle( backupFileName );
+
+				// Restore the valid backup as the active save file.
+				if (primaryFile.exists()) {
+					primaryFile.delete();
+				}
+				backupFile.copyTo( primaryFile );
+
+				System.out.println("[SAVE RECOVERY] Backup restored successfully: " + fileName);
+
+				return backupBundle;
+
+			} catch (Exception backupFailure) {
+				System.out.println("[SAVE RECOVERY] Backup recovery failed: " + backupFileName);
+
+				// Preserve existing game behaviour if no valid recovery file exists.
+				if (primaryFailure instanceof IOException) {
+					throw (IOException) primaryFailure;
+				} else {
+					throw new IOException( primaryFailure );
+				}
+			}
+		}
+	}
 	private static Bundle bundleFromStream( InputStream input ) throws IOException{
 		Bundle bundle = Bundle.read( input );
 		input.close();
@@ -197,20 +244,30 @@ public class FileUtils {
 	// bundle writing
 	
 	//only works for base path
+		//only works for base path
+		//only works for base path
 	public static void bundleToFile( String fileName, Bundle bundle ) throws IOException{
 		try {
 			FileHandle file = getFileHandle(fileName);
+			FileHandle temp = getFileHandle(fileName + ".tmp");
+			FileHandle backup = getFileHandle(fileName + ".bak");
 
-			//write to a temp file, then move the files.
-			// This helps prevent save corruption if writing is interrupted
-			if (file.exists()){
-				FileHandle temp = getFileHandle(fileName + ".tmp");
-				bundleToStream(temp.write(false), bundle);
-				file.delete();
-				temp.moveTo(file);
-			} else {
-				bundleToStream(file.write(false), bundle);
+			// First write the newly serialized bundle to a temporary file.
+			// This preserves the game's existing interrupted-write protection.
+			bundleToStream(temp.write(false), bundle);
+
+			// Keep a backup copy of the newly written valid save data.
+			// This protects against later corruption or deletion of the primary file.
+			if (backup.exists()) {
+				backup.delete();
 			}
+			temp.copyTo(backup);
+
+			// Replace the primary file only after the temp and backup writes succeed.
+			if (file.exists()) {
+				file.delete();
+			}
+			temp.moveTo(file);
 
 		} catch (GdxRuntimeException e){
 			//game classes expect an IO exception, so wrap the GDX exception in that

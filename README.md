@@ -141,52 +141,31 @@ The screenshot utility was manually verified by:
 
 ## Overview
 
-This improvement refactors the core combat and damage system in `Char.java` to address scattered magic numbers, hardcoded `instanceof` checks, and tight coupling between character classes and damage sources. It replaces the FIXME comment requesting a proper damage property system with a fully implemented, extensible design.
+This improvement addresses a collection of identified code and behaviour issues across the game.  
+The goal is to improve correctness, consistency, and maintainability by resolving defects that affect expected system behaviour.
 
 ## ISO/IEC 25010 Quality Attributes
 
-- **Maintainability**
+- **Functional suitability**
 - **Reliability**
+- **Maintainability**
 
-## Technical Summary
+## Scope
 
-### 1. Magic Number Extraction
-
-Replaced 24+ scattered numeric literals (e.g., `1.5f`, `0.67f`) with named `private static final` constants (e.g., `BERSERK_DAMAGE_MULTIPLIER`). This centralizes game balance tuning and significantly improves readability.
-
-### 2. `DamageProperty` Enum System
-
-Introduced an extensible `DamageProperty` enum with pre-built `EnumSet` constants to replace hardcoded `instanceof` checks. Currently applied to `Hunger` and `Electricity` blobs, this system explicitly declares shield-bypass behavior at the call site, adhering to the **Open/Closed Principle (OCP)**.
-
-### 3. `DamageCalculator` Utility
-
-Established a centralized utility class for property-checking logic (`bypassesShields`, `bypassesResistance`, etc.). This decouples `Char.java` from specific damage source classes, providing a modular, contract-based foundation for the damage system.
-
-### 4. Defensive Guard Clauses
-
-Added input validation at the entry of `Char.damage(int, Object, Set<DamageProperty>)` to reject negative damage, null sources, and zero-damage no-ops. This prevents cascading `NullPointerException` failures and improves fault tolerance.
-
-### 5. Architectural Decomposition
-
-Reduced tight coupling by separating state management, property contracts, and calculation rules into three focused classes (`Char`, `DamageCalculator`, `DamageProperty`). This decomposition adheres to the **Single Responsibility Principle (SRP)** and reduces the modification surface area of the main character class.
+The implementation includes multiple targeted fixes across gameplay and interface behaviour. These changes were made to improve correctness and reduce unexpected or inconsistent outcomes.
 
 ## Verification
 
-- Successful compilation with zero syntax errors (previously broken `(Hero)this)` cast)
-- All existing damage calculations produce the same results (regression-safe)
-- `Hunger` and `Electricity` blobs correctly bypass shields via `DamageProperty.IGNORES_SHIELDS_SET`
-- `Char.damage()` rejects invalid inputs (negative damage, null sources)
-- 810+ lines of unit tests covering signatures, enum behavior, and integration paths
+Each fix should be supported by:
+
+- A description of the original issue
+- The expected corrected behaviour
+- Manual or code-level verification showing that the issue was resolved
+- Regression checks confirming related functionality still behaves correctly
 
 ## Main Files Modified
 
-```
-target_project/core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/actors/Char.java
-target_project/core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/actors/DamageCalculator.java
-target_project/core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/actors/DamageProperty.java
-target_project/core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/actors/buffs/Hunger.java
-target_project/core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/actors/blobs/Electricity.java
-```
+_To be finalised once the branch is fully reviewed and merged._
 
 ---
 
