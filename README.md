@@ -1,108 +1,471 @@
 # ELEC5618: Shattered Pixel Dungeon Quality Engineering
 
-This repository contains our group's work for **Assignment 3: Software Quality Engineering**. We are working with **Shattered Pixel Dungeon v3.0.2** to implement and verify code-level quality improvements[cite: 1].
-
-## 📁 Project Structure
-The project follows the mandatory folder structure for submission[cite: 1]:
-- `target_project/`: The active source code directory.
-  - `core/`: Game logic (Target for most Quality Improvements).
-  - `desktop/`: Desktop launcher (Contains environment fixes).
-- `ELEC5618_{LAB}_{GROUP}_Video.mp4`: (To be added) Final 10-minute demonstration[cite: 1].
+This repository contains our group’s work for **ELEC5618 Software Quality Engineering — Assignment 3**.  
+We are extending **Shattered Pixel Dungeon v3.0.2** through three source-code-level quality improvements, supported by testing, verification, and a structured GitHub workflow.
 
 ---
 
-## 🛠 macOS Setup & Environment Fixes
-To prevent the `NullPointerException` and `ExceptionInInitializerError` when running from the IDE, the following patches have been applied to `DesktopLauncher.java`:
+## Project Overview
 
-1. **Version Bypass:** Hardcoded `Game.version` to `"1.5.0-IDE"` to prevent startup crashes.
-2. **Vendor Bypass:** Added a fallback for the `vendor` string to ensure save-file paths resolve correctly.
-3. **Mac VM Options:** If you are on Apple Silicon, you **must** add `-XstartOnFirstThread` to your Run Configuration VM Options.
+The objective of this assignment is to improve the quality of an existing open-source Java project using the **ISO/IEC 25010 software quality model**.
 
----
+Our group is implementing:
 
-## 🎯 Assignment Goals (ISO/IEC 25010)
-Our group is tasked with implementing **three** quality-related improvements[cite: 1]:
-1. **Predefined Improvement:** (Screenshot Utility)[cite: 1].
-2. **Proposed Improvement A:** (Tutor approval required by Week 11)[cite: 1].
-3. **Proposed Improvement B:** (Tutor approval required by Week 11)[cite: 1].
+1. **In-Game Screenshot Shortcut**  
+   Improves **usability** and **operability**.
 
-Each improvement will be evaluated on **Implementation Quality** (clean code, conventions) and **SQA Activities** (Unit testing, metrics, static analysis)[cite: 1].
+2. **Software Quality Bug Fixes and Behaviour Corrections**  
+   Improves **functional suitability**, **reliability**, and **maintainability**.
 
----
-# Improvement 1: Screenshot Utility
-# In-Game Screenshot Utility for Shattered Pixel Dungeon
+3. **Crash-Safe Save Backup and Recovery**  
+   Improves **reliability**, **fault tolerance**, and **recoverability**.
 
-This feature provides a high-performance, seamless way to capture and save game scenes directly to the repository directory. It was developed to meet rigorous **Software Quality Engineering** standards, ensuring zero impact on gameplay performance.
+Each improvement is supported by implementation work, testing evidence, and verification activities.
 
 ---
 
-## 🚀 Features
+## Repository Structure
 
-*   **Dedicated Shortcut**: Maped to the `F12` key for instant capture.
-*   **Asynchronous Processing**: Background threading ensures the game never "hiccups" or freezes during file IO.
-*   **Automated Correction**: Automatically flips pixels vertically to correct OpenGL's bottom-up coordinate inversion.
-*   **Cross-Platform Support**: Logic identifies whether the host is Desktop (Mac/Windows) or Mobile (Android) to use the appropriate file-saving strategy.
-*   **Memory Safe**: Implements strict resource disposal to prevent RAM bloat during long gaming sessions.
-
----
-
-## 🛠️ Technical Overview
-
-### Input Interception
-The utility "hooks" into the engine's `InputHandler.java`. By overriding the `keyUp` method, the system ensures the screenshot is triggered only once per press and doesn't interfere with existing keybindings.
-
-### The Capture Pipeline
-1.  **Buffer Grab**: Captures the current frame buffer from the GPU using LibGDX `ScreenUtils`.
-2.  **Transformation**: A pixel-swapping loop reorients the image from OpenGL's coordinate system to standard top-down PNG format.
-3.  **Thread Hand-off**: The `Pixmap` data is passed to a background thread to prevent blocking the main Render Thread.
-4.  **IO Operations**: The file is saved using a `yyyy-MM-dd_HH-mm-ss` timestamp to the repository root via absolute pathing.
+```text
+SWQE-Shattered-Pixel-Dungeon-Improvements/
+│
+├── target_project/                  # Active Shattered Pixel Dungeon source code
+│   ├── core/                        # Main gameplay logic
+│   ├── desktop/                     # Desktop launcher
+│   ├── SPD-classes/                 # Shared engine and utility classes
+│   └── services/                    # News/update services
+│
+├── .github/workflows/              # CI build workflow
+├── .gitignore                       # Ignores generated/local development files
+├── README.md                        # Project overview and implementation summary
+└── docs/                            # Optional project/testing documentation
+```
 
 ---
 
-## 📋 Rubric Compliance
+## Local Setup
 
-| Requirement | Implementation Detail |
-| :--- | :--- |
-| **Keyboard Shortcut** | Handled via `Input.Keys.F12` interception in `InputHandler`. |
-| **Save as Image** | Encoded as a `.png` file using `PixmapIO`. |
-| **Works During Gameplay** | Implemented at the engine level to ensure availability in all game states. |
-| **No Flow Interruption** | Multithreaded architecture keeps file writing off the main game loop. |
-| **Hardware Compatibility** | Verified on macOS using `fn + F12` and standard `F12` on Windows. |
+### Requirements
 
----
-
-## 📂 File Locations
-
-*   **Code**: `SPD-classes/src/main/java/com/watabou/utils/Screenshot.java`
-*   **Output**: Screenshots are saved to the project root directory (e.g., `/ShatteredPD/screenshot_2026-05-06_14-19-31.png`).
+- **Java 17** recommended
+- Git
+- VS Code, IntelliJ IDEA, or another Java IDE
+- macOS, Windows, or Linux
 
 ---
 
-## 📖 How to Use
+## Running the Project
 
-1.  Launch the game through Android Studio or your preferred IDE.
-2.  While in-game (or at the menu), press **F12** (Mac users: **fn + F12**).
-3.  Check the console output for a "Success" message and the absolute path to your file.
-4.  Right-click your project folder and select **"Reload from Disk"** to see the new image in your file tree.
+From the repository root:
 
-`fix: finalize README documentation for screenshot utility implementation`
+```bash
+cd target_project
+chmod +x gradlew
+./gradlew desktop:build
+./gradlew desktop:debug
+```
+
+### macOS Note
+
+The desktop Gradle run configuration includes the macOS JVM requirement:
+
+```text
+-XstartOnFirstThread
+```
+
+Running through:
+
+```bash
+./gradlew desktop:debug
+```
+
+is the recommended way to launch the game on macOS.
 
 ---
 
-## 🔄 Collaboration Workflow
-- **Branching:** Use `feature/` or `fix/` branches.
-- **Commits:** Every change **must** include a git commit message at the end of the message.
-- **Debugging:** Do not provide direct answers for code issues; provide clues to help each other learn React/Java better.
+# Quality Improvement 1: In-Game Screenshot Shortcut
 
-## 👥 Group Members
-- [Member Name]
-- [Member Name]
-- **Amogh Ranganatha Gowda** (MPE software accelerated) 
-- [Member Name]
-- **Martina Therese Reyes** (Software Engineering Accelerated)
+## Overview
+
+This improvement adds an in-game screenshot function triggered through a keyboard shortcut. It allows players and testers to capture the current game screen during gameplay or menu interaction without interrupting the game flow.
+
+## ISO/IEC 25010 Quality Attributes
+
+- **Usability**
+- **Operability**
+- **Functional suitability**
+
+## Key Features
+
+- Press **F12** to capture the current game scene
+- On macOS laptops, use **fn + F12** when required
+- Captures the active screen using LibGDX frame buffer utilities
+- Corrects the vertical orientation of captured pixels
+- Saves screenshots as timestamped `.png` files
+- Uses background file writing to reduce interruption to the render loop
+
+## Technical Implementation
+
+### Input Handling
+
+The screenshot shortcut is intercepted through the game’s input handling layer.  
+The screenshot is triggered on key release so one press results in one capture.
+
+### Capture Pipeline
+
+1. Read the current game frame buffer.
+2. Convert the pixel data into a correctly oriented image.
+3. Pass the image to a background file-writing process.
+4. Save the image as a timestamped PNG file.
+
+## Main Files Modified
+
+```text
+target_project/SPD-classes/src/main/java/com/watabou/input/InputHandler.java
+target_project/SPD-classes/src/main/java/com/watabou/utils/Screenshot.java
+```
+
+## Verification
+
+The screenshot utility was manually verified by:
+
+- Triggering a screenshot during active gameplay
+- Triggering a screenshot from the menu/interface
+- Confirming a `.png` file was generated
+- Confirming repeated captures generate separate timestamped files
+- Confirming gameplay remains responsive after screenshot capture
 
 ---
-*Deadline: Sunday, 24 May 2026, 23:59*[cite: 1]
 
-Notes/Logs from devs
-May 6, 2026 - 6:32 pm -- CI/CD enabled
+# Quality Improvement 2: Software Quality Bug Fixes and Behaviour Corrections
+
+## Overview
+
+This improvement refactors the core combat and damage system in `Char.java` to address scattered magic numbers, hardcoded `instanceof` checks, and tight coupling between character classes and damage sources. It replaces the FIXME comment requesting a proper damage property system with a fully implemented, extensible design.
+
+## ISO/IEC 25010 Quality Attributes
+
+- **Maintainability**
+- **Reliability**
+
+## Technical Summary
+
+### 1. Magic Number Extraction
+
+Replaced 24+ scattered numeric literals (e.g., `1.5f`, `0.67f`) with named `private static final` constants (e.g., `BERSERK_DAMAGE_MULTIPLIER`). This centralizes game balance tuning and significantly improves readability.
+
+### 2. `DamageProperty` Enum System
+
+Introduced an extensible `DamageProperty` enum with pre-built `EnumSet` constants to replace hardcoded `instanceof` checks. Currently applied to `Hunger` and `Electricity` blobs, this system explicitly declares shield-bypass behavior at the call site, adhering to the **Open/Closed Principle (OCP)**.
+
+### 3. `DamageCalculator` Utility
+
+Established a centralized utility class for property-checking logic (`bypassesShields`, `bypassesResistance`, etc.). This decouples `Char.java` from specific damage source classes, providing a modular, contract-based foundation for the damage system.
+
+### 4. Defensive Guard Clauses
+
+Added input validation at the entry of `Char.damage(int, Object, Set<DamageProperty>)` to reject negative damage, null sources, and zero-damage no-ops. This prevents cascading `NullPointerException` failures and improves fault tolerance.
+
+### 5. Architectural Decomposition
+
+Reduced tight coupling by separating state management, property contracts, and calculation rules into three focused classes (`Char`, `DamageCalculator`, `DamageProperty`). This decomposition adheres to the **Single Responsibility Principle (SRP)** and reduces the modification surface area of the main character class.
+
+## Verification
+
+- Successful compilation with zero syntax errors (previously broken `(Hero)this)` cast)
+- All existing damage calculations produce the same results (regression-safe)
+- `Hunger` and `Electricity` blobs correctly bypass shields via `DamageProperty.IGNORES_SHIELDS_SET`
+- `Char.damage()` rejects invalid inputs (negative damage, null sources)
+- 810+ lines of unit tests covering signatures, enum behavior, and integration paths
+
+## Main Files Modified
+
+```
+target_project/core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/actors/Char.java
+target_project/core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/actors/DamageCalculator.java
+target_project/core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/actors/DamageProperty.java
+target_project/core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/actors/buffs/Hunger.java
+target_project/core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/actors/blobs/Electricity.java
+```
+
+---
+
+# Quality Improvement 3: Crash-Safe Save Backup and Recovery
+
+## Overview
+
+This improvement strengthens the game’s save system by allowing recovery from **corrupted**, **missing**, or **unreadable** primary save files.
+
+The system now creates `.bak` backup files during bundle-based save writes and automatically attempts recovery when a primary save cannot be loaded.
+
+This protects player progress and allows interrupted or damaged save states to be recovered instead of becoming immediately unusable.
+
+## ISO/IEC 25010 Quality Attributes
+
+- **Reliability**
+- **Fault tolerance**
+- **Recoverability**
+
+## Problem
+
+A save game may become unusable if a primary save file is:
+
+- Corrupted
+- Missing
+- Empty
+- No longer readable due to malformed contents
+
+Without recovery support, the save slot may fail to load or may appear unavailable.
+
+## Solution
+
+The implementation introduces automatic backup recovery through the save/load pipeline.
+
+### Backup Creation
+
+When bundle data is written, the system maintains a backup file using the `.bak` extension.
+
+Examples:
+
+```text
+game.dat.bak
+depth1.dat.bak
+```
+
+### Recovery Behaviour
+
+When loading a save:
+
+1. The game first attempts to read the primary file.
+2. If the primary file is unreadable, corrupted, or missing:
+   - the system attempts to load the corresponding `.bak` backup
+3. If the backup is valid:
+   - the primary file is restored from the backup
+   - loading proceeds normally
+4. If the backup is also unavailable or invalid:
+   - the original error behaviour is preserved
+
+### Supported Recovery Paths
+
+The recovery system was wired into:
+
+- Save-slot preview/loading
+- Main game save loading
+- Dungeon level save loading
+
+This ensures recovery occurs not only when the player resumes a run, but also when the menu first checks whether a save slot is still valid.
+
+## Main Files Modified
+
+```text
+target_project/SPD-classes/src/main/java/com/watabou/utils/FileUtils.java
+target_project/core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/Dungeon.java
+target_project/core/src/main/java/com/shatteredpixel/shatteredpixeldungeon/GamesInProgress.java
+```
+
+## Recovery Logs
+
+When recovery occurs, the system prints trace messages such as:
+
+```text
+[SAVE RECOVERY] Primary file unreadable: game1/game.dat
+[SAVE RECOVERY] Attempting backup recovery from: game1/game.dat.bak
+[SAVE RECOVERY] Backup restored successfully: game1/game.dat
+```
+
+These logs support debugging, verification, and demonstration during testing.
+
+## Verification and Test Evidence
+
+### Test Case 1: Corrupted Main Save File
+
+**Action:**  
+Manually overwrite `game.dat` with invalid text.
+
+**Expected Result:**  
+The game restores `game.dat` from `game.dat.bak`.
+
+**Result:**  
+Passed. The file was restored and the save remained visible in the menu.
+
+---
+
+### Test Case 2: Corrupted Level Save File
+
+**Action:**  
+Manually overwrite `depth1.dat` with invalid text.
+
+**Expected Result:**  
+The game restores `depth1.dat` from `depth1.dat.bak`.
+
+**Result:**  
+Passed. The game successfully resumed the run and returned to the dungeon floor.
+
+---
+
+### Test Case 3: Missing Primary Save Files
+
+**Action:**  
+Delete:
+
+```text
+game.dat
+depth1.dat
+```
+
+while keeping:
+
+```text
+game.dat.bak
+depth1.dat.bak
+```
+
+**Expected Result:**  
+The game restores both missing primary files from backups and resumes gameplay.
+
+**Result:**  
+Passed. Terminal logs confirmed both files were recovered:
+
+```text
+[SAVE RECOVERY] Primary file unreadable: game1/game.dat
+[SAVE RECOVERY] Attempting backup recovery from: game1/game.dat.bak
+[SAVE RECOVERY] Backup restored successfully: game1/game.dat
+
+[SAVE RECOVERY] Primary file unreadable: game1/depth1.dat
+[SAVE RECOVERY] Attempting backup recovery from: game1/depth1.dat.bak
+[SAVE RECOVERY] Backup restored successfully: game1/depth1.dat
+```
+
+The game then resumed successfully:
+
+```text
+[GAME] @@ You return to floor 1 of the dungeon.
+```
+
+---
+
+## Build Verification
+
+After each implementation milestone, the desktop project was rebuilt using:
+
+```bash
+./gradlew desktop:build
+```
+
+All feature changes compiled successfully before further testing.
+
+---
+
+# Testing and SQA Approach
+
+Our group uses a combination of:
+
+- Manual functional testing
+- Regression testing
+- Fault-injection testing
+- Edge-case verification
+- Build verification through Gradle
+- Pull Request review before integration
+
+Each quality improvement is tested against its intended ISO/IEC 25010 quality attributes.
+
+## Example SQA Methods Used
+
+| Improvement          | Verification Method                                                                            |
+| -------------------- | ---------------------------------------------------------------------------------------------- |
+| Screenshot Shortcut  | Manual feature verification, repeated capture testing, regression check                        |
+| Bug Fixes            | Issue reproduction, corrected behaviour verification, regression check                         |
+| Save Backup Recovery | Fault injection, corrupted-file testing, missing-file recovery testing, load-flow verification |
+
+---
+
+# CI/CD and Build Validation
+
+The repository uses a GitHub Actions build workflow to support continuous integration.
+
+The CI process is intended to:
+
+- Run automatically on Pull Requests into the integration branch
+- Verify that the project compiles successfully
+- Prevent unbuildable code from being merged without review
+
+Local verification is also performed before submitting or merging feature branches:
+
+```bash
+cd target_project
+./gradlew desktop:build
+```
+
+---
+
+# Collaboration Workflow
+
+## Branch Strategy
+
+The repository uses `target-project` as the stable integration branch for the assignment.
+
+Developers work on separate branches:
+
+```text
+feature/in-game-screenshot
+feature/crash-safe-save-recovery
+feature/...
+fix/...
+chore/...
+```
+
+## Pull Request Flow
+
+1. A developer creates a dedicated feature branch.
+2. The feature is implemented and built locally.
+3. A Pull Request is opened into `target-project`.
+4. The assigned tester reviews the feature through defined test cases.
+5. The PR is reviewed by another team member.
+6. Once verified, the PR is merged into `target-project`.
+
+## Repository Hygiene
+
+Generated files and local configuration files should not be committed.
+
+Examples include:
+
+```text
+.gradle/
+build/
+bin/
+.idea/
+local.properties
+.DS_Store
+*.class
+*.jar
+*.bin
+*.lock
+```
+
+These are excluded through `.gitignore` to keep Pull Requests clean and focused on source-code changes.
+
+---
+
+# Group Members
+
+- **Karan Singh Biswakarma** — MPE Software Accelerated
+- **Martina Therese Reyes** — Software Engineering Accelerated
+- **Amogh Ranganatha Gowda** — MPE Software Accelerated
+- **[Add Member Name]**
+- **[Add Member Name]**
+
+---
+
+# Assignment Deliverables
+
+The final submission will include:
+
+- Modified Shattered Pixel Dungeon source code
+- One video demonstration of implemented improvements and testing activities
+- Optional presentation slides, if used in the final video
+
+---
+
+# Deadline
+
+**Sunday, 24 May 2026 at 23:59**
