@@ -6,9 +6,22 @@ sourceCompatibility = targetCompatibility = appJavaCompatibility
 dependencies {
     api project(':SPD-classes')
     implementation project(':services')
+
+    // Testing dependencies
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:4.11.0'
 }
 
 apply plugin: 'com.github.spotbugs'
+
+sourceSets {
+    test {
+        java {
+            srcDir 'src/test/java'
+        }
+    }
+}
+
 
 import com.github.spotbugs.snom.Effort
 import com.github.spotbugs.snom.Confidence

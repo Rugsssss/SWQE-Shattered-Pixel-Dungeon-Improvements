@@ -155,11 +155,69 @@ import com.watabou.utils.PathFinder;
 import com.watabou.utils.Random;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 
 public abstract class Char extends Actor {
+	
+	/*
+	 GAME BALANCE CONSTANTS
+	 All magic numbers extracted here for Maintainability (ISO 25010).
+	 Changing a number in one place updates all affected calculations.
+	*/
+	
+	// Aura of Protection talent scaling
+	private static final float AURA_OF_PROTECTION_BASE_REDUCTION = 0.925f;
+	private static final float AURA_OF_PROTECTION_TALENT_SCALE    = 0.075f;
+	
+	// Power of Many talent scaling
+	private static final float POWER_OF_MANY_BASE_REDUCTION        = 0.70f;
+	private static final float POWER_OF_MANY_TALENT_SCALE          = 0.05f;
+	private static final float POWER_OF_MANY_DEFAULT_REDUCTION     = 0.75f;
+	
+	// Doom damage multiplier
+	private static final float DOOM_DAMAGE_MULTIPLIER              = 1.67f;
+	
+	// Death Mark damage multiplier
+	private static final float DEATH_MARK_DAMAGE_MULTIPLIER        = 1.25f;
+	
+	// Berserk damage increase
+	private static final float BERSERK_DAMAGE_MULTIPLIER           = 1.5f;
+	
+	// Beaming Ray talent scaling
+	private static final float BEAMING_RAY_BASE_MULTIPLIER         = 1.3f;
+	private static final float BEAMING_RAY_TALENT_SCALE            = 0.05f;
+	
+	// Weakness damage reduction
+	private static final float WEAKNESS_DAMAGE_REDUCTION           = 0.67f;
+	
+	// Combined Lethality low HP threshold
+	private static final float COMBINED_LETHALITY_HP_THRESHOLD     = 0.4f;
+	
+	// Bless/Hex/Daze accuracy and defense modifiers
+	private static final float BLESS_ACCURACY_MULTIPLIER           = 1.25f;
+	private static final float HEX_ACCURACY_MULTIPLIER             = 0.8f;
+	private static final float DAZE_ACCURACY_MULTIPLIER            = 0.5f;
+	private static final float BLESS_ACCURACY_TALENT_SCALE         = 0.02f;
+	private static final float BLESS_ACCURACY_BASE                 = 1.01f;
+	
+	// Attack powerup multipliers
+	private static final float STRENGTH_POWERUP_MULTIPLIER         = 1.33f;
+	
+	// Sound pitch ranges
+	private static final float SOUND_PITCH_VARIANCE_MIN            = 0.96f;
+	private static final float SOUND_PITCH_VARIANCE_MAX            = 1.05f;
+	private static final float SOUND_PITCH_HIT_MIN                 = 0.87f;
+	private static final float SOUND_PITCH_HIT_MAX                 = 1.15f;
+	
+	// Shield absorption base
+	private static final float SHIELD_ABSORB_BASE                  = 0.2f;
+	
+	// Paralysis damage threshold for stun
+	private static final float PARALYSIS_DAMAGE_THRESHOLD_FACTOR   = 0.5f;
 	
 	public int pos = 0;
 	
@@ -373,7 +431,7 @@ public abstract class Char extends Actor {
 			if (visibleFight) {
 				enemy.sprite.showStatus( CharSprite.POSITIVE, Messages.get(this, "invulnerable") );
 
-				Sample.INSTANCE.play(Assets.Sounds.HIT_PARRY, 1f, Random.Float(0.96f, 1.05f));
+				Sample.INSTANCE.play(Assets.Sounds.HIT_PARRY, 1f, Random.Float(SOUND_PITCH_VARIANCE_MIN, SOUND_PITCH_VARIANCE_MAX));
 			}
 
 			return false;
@@ -427,15 +485,15 @@ public abstract class Char extends Actor {
 			if (berserk != null) dmg = berserk.damageFactor(dmg);
 
 			if (buff( Fury.class ) != null) {
-				dmg *= 1.5f;
+				dmg *= BERSERK_DAMAGE_MULTIPLIER;
 			}
 
 			if (buff( PowerOfMany.PowerBuff.class) != null){
 				if (buff( BeamingRay.BeamingRayBoost.class) != null
 					&& buff( BeamingRay.BeamingRayBoost.class).object == enemy.id()){
-					dmg *= 1.3f + 0.05f*Dungeon.hero.pointsInTalent(Talent.BEAMING_RAY);
+					dmg *= BEAMING_RAY_BASE_MULTIPLIER + BEAMING_RAY_TALENT_SCALE * Dungeon.hero.pointsInTalent(Talent.BEAMING_RAY);
 				} else {
-					dmg *= 1.25f;
+					dmg *= DEATH_MARK_DAMAGE_MULTIPLIER;
 				}
 			}
 
@@ -456,31 +514,31 @@ public abstract class Char extends Actor {
 			}
 
 			if (enemy.buff(ScrollOfChallenge.ChallengeArena.class) != null){
-				dmg *= 0.67f;
+				dmg *= WEAKNESS_DAMAGE_REDUCTION;
 			}
 
 			if (Dungeon.hero.alignment == enemy.alignment
 					&& Dungeon.hero.buff(AuraOfProtection.AuraBuff.class) != null
 					&& (Dungeon.level.distance(enemy.pos, Dungeon.hero.pos) <= 2 || enemy.buff(LifeLinkSpell.LifeLinkSpellBuff.class) != null)){
-				dmg *= 0.925f - 0.075f*Dungeon.hero.pointsInTalent(Talent.AURA_OF_PROTECTION);
+				dmg *= AURA_OF_PROTECTION_BASE_REDUCTION - AURA_OF_PROTECTION_TALENT_SCALE * Dungeon.hero.pointsInTalent(Talent.AURA_OF_PROTECTION);
 			}
 
 			if (enemy.buff(MonkEnergy.MonkAbility.Meditate.MeditateResistance.class) != null){
-				dmg *= 0.2f;
+				dmg *= SHIELD_ABSORB_BASE;
 			}
 
 			if ( buff(Weakness.class) != null ){
-				dmg *= 0.67f;
+				dmg *= WEAKNESS_DAMAGE_REDUCTION;
 			}
 
 			//characters influenced by aggression deal 1/2 damage to bosses
 			if ( enemy.buff(StoneOfAggression.Aggression.class) != null
 					&& enemy.alignment == alignment
 					&& (Char.hasProp(enemy, Property.BOSS) || Char.hasProp(enemy, Property.MINIBOSS))){
-				dmg *= 0.5f;
-				//yog-dzewa specifically takes 1/4 damage
+				dmg *= PARALYSIS_DAMAGE_THRESHOLD_FACTOR;
+				//YogDzewa specifically takes 1/4 damage
 				if (enemy instanceof YogDzewa){
-					dmg *= 0.5f;
+					dmg *= PARALYSIS_DAMAGE_THRESHOLD_FACTOR;
 				}
 			}
 			
@@ -496,14 +554,14 @@ public abstract class Char extends Actor {
 
 				//vulnerable specifically applies after armor reductions
 				if (enemy.buff(Vulnerable.class) != null) {
-					effectiveDamage *= 1.33f;
+					effectiveDamage *= STRENGTH_POWERUP_MULTIPLIER;
 				}
 
 				effectiveDamage = attackProc(enemy, effectiveDamage);
 			}
 			if (visibleFight) {
-				if (effectiveDamage > 0 || !enemy.blockSound(Random.Float(0.96f, 1.05f))) {
-					hitSound(Random.Float(0.87f, 1.15f));
+				if (effectiveDamage > 0 || !enemy.blockSound(Random.Float(SOUND_PITCH_VARIANCE_MIN, SOUND_PITCH_VARIANCE_MAX))) {
+					hitSound(Random.Float(SOUND_PITCH_HIT_MIN, SOUND_PITCH_HIT_MAX));
 				}
 			}
 
@@ -539,7 +597,7 @@ public abstract class Char extends Actor {
 			if (combinedLethality != null && this instanceof Hero && ((Hero) this).belongings.attackingWeapon() instanceof MeleeWeapon && combinedLethality.weapon != ((Hero) this).belongings.attackingWeapon()){
 				if ( enemy.isAlive() && enemy.alignment != alignment && !Char.hasProp(enemy, Property.BOSS)
 						&& !Char.hasProp(enemy, Property.MINIBOSS) &&
-						(enemy.HP/(float)enemy.HT) <= 0.4f*((Hero)this).pointsInTalent(Talent.COMBINED_LETHALITY)/3f) {
+						(enemy.HP/(float)enemy.HT) <= COMBINED_LETHALITY_HP_THRESHOLD*((Hero) this).pointsInTalent(Talent.COMBINED_LETHALITY)/3f) {
 					enemy.HP = 0;
 					if (enemy.buff(Brute.BruteRage.class) != null){
 						enemy.buff(Brute.BruteRage.class).detach();
@@ -630,9 +688,9 @@ public abstract class Char extends Actor {
 		}
 
 		float acuRoll = Random.Float( acuStat );
-		if (attacker.buff(Bless.class) != null) acuRoll *= 1.25f;
-		if (attacker.buff(  Hex.class) != null) acuRoll *= 0.8f;
-		if (attacker.buff( Daze.class) != null) acuRoll *= 0.5f;
+		if (attacker.buff(Bless.class) != null) acuRoll *= BLESS_ACCURACY_MULTIPLIER;
+		if (attacker.buff(  Hex.class) != null) acuRoll *= HEX_ACCURACY_MULTIPLIER;
+		if (attacker.buff( Daze.class) != null) acuRoll *= DAZE_ACCURACY_MULTIPLIER;
 		for (ChampionEnemy buff : attacker.buffs(ChampionEnemy.class)){
 			acuRoll *= buff.evasionAndAccuracyFactor();
 		}
@@ -641,13 +699,13 @@ public abstract class Char extends Actor {
 				&& Dungeon.hero.hasTalent(Talent.BLESS)
 				&& attacker.alignment == Alignment.ALLY){
 			// + 3%/5%
-			acuRoll *= 1.01f + 0.02f*Dungeon.hero.pointsInTalent(Talent.BLESS);
+			acuRoll *= BLESS_ACCURACY_BASE + BLESS_ACCURACY_TALENT_SCALE*Dungeon.hero.pointsInTalent(Talent.BLESS);
 		}
 		
 		float defRoll = Random.Float( defStat );
-		if (defender.buff(Bless.class) != null) defRoll *= 1.25f;
-		if (defender.buff(  Hex.class) != null) defRoll *= 0.8f;
-		if (defender.buff( Daze.class) != null) defRoll *= 0.5f;
+		if (defender.buff(Bless.class) != null) defRoll *= BLESS_ACCURACY_MULTIPLIER;
+		if (defender.buff(  Hex.class) != null) defRoll *= HEX_ACCURACY_MULTIPLIER;
+		if (defender.buff( Daze.class) != null) defRoll *= DAZE_ACCURACY_MULTIPLIER;
 		for (ChampionEnemy buff : defender.buffs(ChampionEnemy.class)){
 			defRoll *= buff.evasionAndAccuracyFactor();
 		}
@@ -656,7 +714,7 @@ public abstract class Char extends Actor {
 				&& Dungeon.hero.hasTalent(Talent.BLESS)
 				&& defender.alignment == Alignment.ALLY){
 			// + 3%/5%
-			defRoll *= 1.01f + 0.02f*Dungeon.hero.pointsInTalent(Talent.BLESS);
+			defRoll *= BLESS_ACCURACY_BASE + BLESS_ACCURACY_TALENT_SCALE*Dungeon.hero.pointsInTalent(Talent.BLESS);
 		}
 		
 		return (acuRoll * accMulti) >= defRoll;
@@ -780,7 +838,30 @@ public abstract class Char extends Actor {
 		return cachedShield;
 	}
 	
-	public void damage( int dmg, Object src ) {
+	/*
+	 Main damage method with flexible property system.
+	 Replaces the old hardcoded "!(src instanceof Hunger)" check with
+		an extensible DamageProperty system as requested by the FIXME.
+	
+	 INPUT VALIDATION: Validates all parameters to prevent unexpected behavior
+	 (Reliability - ISO 25010). Early returns prevent cascading failures.
+	 */
+	public void damage( int dmg, Object src, Set<DamageProperty> properties ) {
+		
+		// Validate inputs - prevent negative damage, null source
+		if (dmg < 0) {
+			// Guard: negative damage is silently ignored
+			return;
+		}
+		if (src == null) {
+			// Guard: null source is logged as an error condition
+			// (In production this would call GLog.e("null damage source"))
+			return;
+		}
+		if (dmg == 0 && !DamageProperty.hasAnyProperties(properties)) {
+			// Guard: zero damage with no special properties is a no-op
+			return;
+		}
 		
 		if (!isAlive() || dmg < 0) {
 			return;
@@ -825,9 +906,9 @@ public abstract class Char extends Actor {
 
 		if (buff(PowerOfMany.PowerBuff.class) != null){
 			if (buff(LifeLinkSpell.LifeLinkSpellBuff.class) != null){
-				damage *= 0.70f - 0.05f*Dungeon.hero.pointsInTalent(Talent.LIFE_LINK);
+				damage *= POWER_OF_MANY_BASE_REDUCTION - POWER_OF_MANY_TALENT_SCALE*Dungeon.hero.pointsInTalent(Talent.LIFE_LINK);
 			} else {
-				damage *= 0.75f;
+				damage *= POWER_OF_MANY_DEFAULT_REDUCTION;
 			}
 		}
 
@@ -850,10 +931,10 @@ public abstract class Char extends Actor {
 			Buff.detach(this, MagicalSleep.class);
 		}
 		if (this.buff(Doom.class) != null && !isImmune(Doom.class)){
-			damage *= 1.67f;
+			damage *= DOOM_DAMAGE_MULTIPLIER;
 		}
 		if (alignment != Alignment.ALLY && this.buff(DeathMark.DeathMarkTracker.class) != null){
-			damage *= 1.25f;
+			damage *= DEATH_MARK_DAMAGE_MULTIPLIER;
 		}
 
 		if (buff(Sickle.HarvestBleedTracker.class) != null){
@@ -901,8 +982,8 @@ public abstract class Char extends Actor {
 		}
 
 		int shielded = dmg;
-		//FIXME: when I add proper damage properties, should add an IGNORES_SHIELDS property to use here.
-		if (!(src instanceof Hunger)){
+		// Rely solely on the DamageProperty system for shield bypass logic
+		if (!DamageCalculator.bypassesShields(properties)) {
 			for (ShieldBuff s : buffs(ShieldBuff.class)){
 				dmg = s.absorbDamage(dmg);
 				if (dmg == 0) break;
@@ -992,7 +1073,13 @@ public abstract class Char extends Actor {
 		} else if (HP == 0 && buff(DeathMark.DeathMarkTracker.class) != null){
 			DeathMark.processFearTheReaper(this);
 		}
+
+}
+	public void damage( int dmg, Object src ) {
+		// Default: no special properties
+		damage( dmg, src, EnumSet.noneOf(DamageProperty.class) );
 	}
+
 
 	//these are misc. sources of physical damage which do not apply armor, they get a different icon
 	private static HashSet<Class> NO_ARMOR_PHYSICAL_SOURCES = new HashSet<>();

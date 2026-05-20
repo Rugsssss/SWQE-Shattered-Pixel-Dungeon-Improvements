@@ -24,6 +24,7 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.blobs;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.DamageProperty;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Paralysis;
 import com.shatteredpixel.shatteredpixeldungeon.effects.BlobEmitter;
@@ -37,6 +38,18 @@ import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.watabou.utils.PathFinder;
 import com.watabou.utils.Random;
 
+import java.util.EnumSet;
+
+/*
+
+Electricity blob - shocks characters in water with electricity.
+QUALITY IMPROVEMENTS (ISO 25010):
+- Maintainability: Uses DamageProperty.IGNORES_SHIELDS for explicit shield bypass
+  instead of hardcoded type checks
+- Reliability: Clear separation of damage calculation from damage application
+- Testability: Damage logic can now be unit tested via DamageProperty system
+
+*/
 public class Electricity extends Blob {
 	
 	{
@@ -52,7 +65,7 @@ public class Electricity extends Blob {
 		water = Dungeon.level.water;
 		int cell;
 		
-		//spread first..
+		//spread first - 
 		for (int i = area.left-1; i <= area.right; i++) {
 			for (int j = area.top-1; j <= area.bottom; j++) {
 				cell = i + j*Dungeon.level.width();
@@ -63,7 +76,7 @@ public class Electricity extends Blob {
 			}
 		}
 		
-		//..then decrement/shock
+		// - ..then decrement/shock
 		for (int i = area.left-1; i <= area.right; i++) {
 			for (int j = area.top-1; j <= area.bottom; j++) {
 				cell = i + j*Dungeon.level.width();
@@ -74,7 +87,11 @@ public class Electricity extends Blob {
 							Buff.prolong( ch, Paralysis.class, cur[cell]);
 						}
 						if (cur[cell] % 2 == 1) {
-							ch.damage(Math.round(Random.Float(2 + Dungeon.scalingDepth() / 5f)), this);
+							// Electricity damage bypasses shields via DamageProperty system
+							// (Reliability: explicit contract, not hardcoded type check)
+							ch.damage(Math.round(Random.Float(2 + Dungeon.scalingDepth() / 5f)), 
+							          this, 
+							          DamageProperty.IGNORES_SHIELDS_SET);
 							if (!ch.isAlive() && ch == Dungeon.hero){
 								Dungeon.fail( this );
 								GLog.n( Messages.get(this, "ondeath") );

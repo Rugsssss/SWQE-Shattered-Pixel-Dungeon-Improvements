@@ -24,6 +24,7 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
+import com.shatteredpixel.shatteredpixeldungeon.actors.DamageProperty;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.exotic.ScrollOfChallenge;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.SaltCube;
@@ -33,6 +34,8 @@ import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.watabou.utils.Bundle;
+
+import java.util.EnumSet;
 
 public class Hunger extends Buff implements Hero.Doom {
 
@@ -79,7 +82,7 @@ public class Hunger extends Buff implements Hero.Doom {
 				partialDamage += target.HT/1000f;
 
 				if (partialDamage > 1){
-					target.damage( (int)partialDamage, this);
+					target.damage( (int)partialDamage, this, DamageProperty.IGNORES_SHIELDS_SET);
 					partialDamage -= (int)partialDamage;
 				}
 				
@@ -95,7 +98,7 @@ public class Hunger extends Buff implements Hero.Doom {
 				if (newLevel >= STARVING) {
 
 					GLog.n( Messages.get(this, "onstarving") );
-					hero.damage( 1, this );
+					hero.damage( 1, this, DamageProperty.IGNORES_SHIELDS_SET );
 
 					hero.interrupt();
 					newLevel = STARVING;
@@ -150,7 +153,7 @@ public class Hunger extends Buff implements Hero.Doom {
 			level = STARVING;
 			partialDamage += excess * (target.HT/1000f);
 			if (partialDamage > 1f){
-				target.damage( (int)partialDamage, this );
+				target.damage( (int)partialDamage, this, DamageProperty.IGNORES_SHIELDS_SET );
 				partialDamage -= (int)partialDamage;
 			}
 		}
@@ -159,7 +162,7 @@ public class Hunger extends Buff implements Hero.Doom {
 			GLog.w( Messages.get(this, "onhungry") );
 		} else if (oldLevel < STARVING && level >= STARVING){
 			GLog.n( Messages.get(this, "onstarving") );
-			target.damage( 1, this );
+			target.damage( 1, this, DamageProperty.IGNORES_SHIELDS_SET );
 		}
 
 		BuffIndicator.refreshHero();
